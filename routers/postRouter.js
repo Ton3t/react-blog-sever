@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const Post = require("../models/postModel");
 
 // recibir posts
 
@@ -10,6 +11,10 @@ router.get("/", (req, res) => {
 
 router.post("/", async(req, res) => {
     const { titulo, descripcion, code } = req.body;
+
+    const newPost = new Post({
+        titulo, descripcion, code
+    });
 });
 
 module.exports = router;
