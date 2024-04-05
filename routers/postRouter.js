@@ -15,6 +15,8 @@ router.post("/", async(req, res) => {
     const newPost = new Post({
         titulo, descripcion, code
     });
+
+    newPost.save();
 });
 
 module.exports = router;
