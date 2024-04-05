@@ -11,7 +11,7 @@ router.get("/", (req, res) => {
 
 router.post("/", async (req, res) => {
   try {
-    const { titulo, descripcion, code } = req.body;
+    const { titulo, descripcion, code, images } = req.body;
 
     if (!titulo && !descripcion && !code) {
       return res
@@ -23,6 +23,7 @@ router.post("/", async (req, res) => {
       titulo,
       descripcion,
       code,
+      images
     });
 
     const savedPost = await newPost.save();
@@ -54,6 +55,41 @@ router.delete("/:id", async(req, res) => {
 
     await existingPost.deleteOne();
     res.json(existingPost);
+    } catch (error) {
+        res.status(500).send();
+    }
+});
+
+// modificar datos de los posts
+
+router.put("/:id", async(req, res) => {
+    try {
+        const { titulo, descripcion, code, images } = req.body;
+    const postId = req.params.id;
+
+    if(!titulo && !descripcion && !code) {
+        return res
+        .status(400)
+        .json({ errorMessage: "Debe rellenar todos los campos." });
+    }
+    if(!postId) {
+        return res
+        .status(400)
+        .json({ errorMessage: "No ha enviado ningún ID." });
+    }
+
+    const originalPost = await Post.findById(postId);
+    if(!originalPost) {
+        return res.status(400).json({errorMessage: "No se ha encontrado ningún fragmento nuevo con este ID. Porfavor contacte con un Programador."})
+    }
+
+    originalPost.titulo = titulo;
+    originalPost.descripcion = descripcion;
+    originalPost.code = code;
+    originalPost.images = images;
+
+    const savedPost = await originalPost.save();
+    res.json(savedPost);
     } catch (error) {
         res.status(500).send();
     }
