@@ -32,4 +32,32 @@ router.post("/", async (req, res) => {
   }
 });
 
+// borrar posts de la base de datos
+
+router.delete("/:id", async(req, res) => {
+
+    try {
+        const postId = req.params.id;
+
+    if(!postId) {
+        return res
+        .status(400)
+        .json({ errorMessage: "No ha enviado ningún ID." });
+    }
+
+    const existingPost = await Post.findById(postId);
+    if(!existingPost) {
+        return res
+        .status(400)
+        .json({ errorMessage: "El ID no existe en la base de datos. Porfavor contacte con un Programador." });
+    }
+
+    await existingPost.deleteOne();
+    res.json(existingPost);
+    } catch (error) {
+        res.status(500).send();
+    }
+    
+});
+
 module.exports = router;
