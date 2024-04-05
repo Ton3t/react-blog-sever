@@ -3,8 +3,10 @@ const Post = require("../models/postModel");
 
 // recibir posts
 
-router.get("/", (req, res) => {
-  res.send("Post test");
+router.get("/", async (req, res) => {
+    const existingPost = await Post.find();
+    console.log(existingPost);
+    res.json(existingPost);
 });
 
 // enviar posts
@@ -70,7 +72,7 @@ router.put("/:id", async(req, res) => {
     if(!titulo && !descripcion && !code) {
         return res
         .status(400)
-        .json({ errorMessage: "Debe rellenar todos los campos." });
+        .json({ errorMessage: "Debes modificar algún campo." });
     }
     if(!postId) {
         return res
