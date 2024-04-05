@@ -5,7 +5,6 @@ const postSchema = new mongoose.Schema(
     titulo: { type: String },
     descripcion: { type: String },
     code: { type: String },
-    images: [{ type: String }],
   },
   {
     timestamps: true,
