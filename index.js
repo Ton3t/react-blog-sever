@@ -1,5 +1,8 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+
+dotenv.config();
 
 const app = express();
 
@@ -11,8 +14,9 @@ app.use("/posts", require("./routers/postRouter"));
 
 // CONECTAR A MONGODB
 
-mongoose
-  .connect(
-    "mongodb+srv://tonet:aDgAH4BavS5YGKCO@snipet-manager.dq5intb.mongodb.net/?retryWrites=true&w=majority&appName=Snipet-manager"
-  )
-  .then(console.log("Conectado a MONGODB"));
+mongoose.connect(process.env.MDB_CONNECT_STRING).then(
+    () => {console.log("Conectado a MONGODB")},
+    err => {
+        console.log(err);
+    }
+);
