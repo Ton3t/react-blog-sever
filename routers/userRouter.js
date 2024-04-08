@@ -3,7 +3,12 @@ const User = require("../models/userModel");
 const bcrypt = require("bcryptjs");
 
 router.get("/", async (req, res) => {
-  res.json("Api corriendo");
+  try {
+    const users = await User.find();
+    res.json(users);
+  } catch (err) {
+    res.status(500).send();
+  }
 });
 
 router.post("/", async (req, res) => {
@@ -74,6 +79,64 @@ router.post("/", async (req, res) => {
     res.cookie("token", token, { httpOnly: true}).send();
   } catch (err) {
     res.status(500).send();
+  }
+});
+
+router.post("/login", async(req, res) => {
+  try {
+    const { nombre, password } = req.body;
+
+    if(!nombre || !password) {
+      return res.status(400).json({
+        errorMessage: "Porfavor rellene todos los campos."
+      });
+    }
+
+    const existingUser = await User.findOne(nombre);
+    if(!existingUser) {
+      return res.status(401).json({
+        errorMessage: "El nombre de usuario no se encuentra en la base de datos."
+      });
+    }
+
+    const correctPassword = await bcrypt.compare(password, existingUser.passwordHash);
+
+    if(!correctPassword) {
+      return res.status(401).json({
+        errorMessage: "Password incorrecto, verifique su contraseña."
+      });
+    }
+
+    const token = jwt.sign({
+      id: existingUser._id,
+    }, process.env.JWT_SECRET);
+
+    res.cookie("token", token, {httpOnly: true}).send();
+  } catch (err) {
+    res.status(500).send();
+  }
+});
+
+router.get("/loggedIn", (req, res) => {
+  try {
+    const token = req.cookies.token;
+
+    if(!token) {
+      return res.json(null);
+    }
+
+    const validatedUser = jwt.verify(token, process.env.JWT_SECRET);
+    res.json(validatedUser.id);
+  } catch (err) {
+    return res.json(null);
+  }
+});
+
+router.get("/logOut", (req, res) => {
+  try {
+    return res.clearCookie("token").send();
+  } catch (err) {
+    return res.json(null);   
   }
 });
 
