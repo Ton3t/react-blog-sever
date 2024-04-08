@@ -15,6 +15,7 @@ app.use(cors({
 app.listen(5000, () => console.log("Servidor corriendo en el puerto 5000"));
 
 app.use("/posts", require("./routers/postRouter"));
+app.use("/auth", require("./routers/userRouter"));
 
 // CONECTAR A MONGODB
 
