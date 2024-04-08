@@ -76,42 +76,49 @@ router.post("/", async (req, res) => {
       process.env.JWT_SECRET
     );
 
-    res.cookie("token", token, { httpOnly: true}).send();
+    res.cookie("token", token, { httpOnly: true }).send();
   } catch (err) {
     res.status(500).send();
   }
 });
 
-router.post("/login", async(req, res) => {
+router.post("/login", async (req, res) => {
   try {
     const { nombre, password } = req.body;
 
-    if(!nombre || !password) {
+    if (!nombre || !password) {
       return res.status(400).json({
-        errorMessage: "Porfavor rellene todos los campos."
+        errorMessage: "Porfavor rellene todos los campos.",
       });
     }
 
-    const existingUser = await User.findOne(nombre);
-    if(!existingUser) {
+    const existingUser = await User.findOne({ nombre });
+    if (!existingUser) {
       return res.status(401).json({
-        errorMessage: "El nombre de usuario no se encuentra en la base de datos."
+        errorMessage:
+          "El nombre de usuario no se encuentra en la base de datos.",
       });
     }
 
-    const correctPassword = await bcrypt.compare(password, existingUser.passwordHash);
+    const correctPassword = await bcrypt.compare(
+      password,
+      existingUser.passwordHash
+    );
 
-    if(!correctPassword) {
+    if (!correctPassword) {
       return res.status(401).json({
-        errorMessage: "Password incorrecto, verifique su contraseña."
+        errorMessage: "Password incorrecto, verifique su contraseña.",
       });
     }
 
-    const token = jwt.sign({
-      id: existingUser._id,
-    }, process.env.JWT_SECRET);
+    const token = jwt.sign(
+      {
+        id: existingUser._id,
+      },
+      process.env.JWT_SECRET
+    );
 
-    res.cookie("token", token, {httpOnly: true}).send();
+    res.cookie("token", token, { httpOnly: true }).send();
   } catch (err) {
     res.status(500).send();
   }
@@ -121,7 +128,7 @@ router.get("/loggedIn", (req, res) => {
   try {
     const token = req.cookies.token;
 
-    if(!token) {
+    if (!token) {
       return res.json(null);
     }
 
@@ -136,7 +143,7 @@ router.get("/logOut", (req, res) => {
   try {
     return res.clearCookie("token").send();
   } catch (err) {
-    return res.json(null);   
+    return res.json(null);
   }
 });
 
