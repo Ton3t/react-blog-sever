@@ -1,16 +1,32 @@
 const router = require("express").Router();
 const Post = require("../models/postModel");
+const auth = require("../middleware/auth");
 
 // recibir posts
 
 router.get("/", async (req, res) => {
-  const existingPost = await Post.find();
-  res.json(existingPost);
+  try {
+    const posts = await Post.find();
+    res.json(posts);
+  } catch (err) {
+    res.status(500);
+  }
+});
+
+// posts para  cada usuario
+
+router.get("/userposts", auth, async (req, res) => {
+  try {
+    const posts = await Post.find({ user: req.user });
+    res.json(posts);
+  } catch (error) {
+    res.status(500);
+  }
 });
 
 // enviar posts
 
-router.post("/", async (req, res) => {
+router.post("/", auth, async (req, res) => {
   try {
     const { titulo, descripcion, code, images } = req.body;
 
@@ -25,6 +41,7 @@ router.post("/", async (req, res) => {
       descripcion,
       code,
       images,
+      user: req.user,
     });
 
     const savedPost = await newPost.save();
@@ -36,7 +53,7 @@ router.post("/", async (req, res) => {
 
 // borrar posts de la base de datos
 
-router.delete("/:id", async (req, res) => {
+router.delete("/:id", auth, async (req, res) => {
   try {
     const postId = req.params.id;
 
@@ -46,12 +63,14 @@ router.delete("/:id", async (req, res) => {
 
     const existingPost = await Post.findById(postId);
     if (!existingPost) {
-      return res
-        .status(400)
-        .json({
-          errorMessage:
-            "El ID no existe en la base de datos. Porfavor contacte con un Programador.",
-        });
+      return res.status(400).json({
+        errorMessage:
+          "El ID no existe en la base de datos. Porfavor contacte con un Programador.",
+      });
+    }
+
+    if (existingPost.user.toString() !== req.user) {
+      return res.status(401).json({ errorMessage: "No estás autorizado." });
     }
 
     await existingPost.deleteOne();
@@ -63,7 +82,7 @@ router.delete("/:id", async (req, res) => {
 
 // modificar datos de los posts
 
-router.put("/:id", async (req, res) => {
+router.put("/:id", auth, async (req, res) => {
   try {
     const { titulo, descripcion, code, images } = req.body;
     const postId = req.params.id;
@@ -79,12 +98,14 @@ router.put("/:id", async (req, res) => {
 
     const originalPost = await Post.findById(postId);
     if (!originalPost) {
-      return res
-        .status(400)
-        .json({
-          errorMessage:
-            "No se ha encontrado ningún fragmento nuevo con este ID. Porfavor contacte con un Programador.",
-        });
+      return res.status(400).json({
+        errorMessage:
+          "No se ha encontrado ningún fragmento nuevo con este ID. Porfavor contacte con un Programador.",
+      });
+    }
+
+    if (originalPost.user.toString() !== req.user) {
+      return res.status(401).json({ errorMessage: "No estás autorizado." });
     }
 
     originalPost.titulo = titulo;
